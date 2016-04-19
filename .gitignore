@@ -1,0 +1,8 @@
+# Ignore pdf junk
+*.ps
+*.pdf
+*.dvi
+
+# Ignore compiled junk
+*.o
+

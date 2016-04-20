@@ -509,18 +509,86 @@ Windows handle processes, threads, and CPU scheduling.
 \section{Processes}
 
 \subsection{Linux}
+A process on a Linux system is more than just an executing program.
+In addition to this, a process holds information about the resources
+that the program as allocated to it, including a unique process id,
+file descriptors, and more. New processes are created using the
+\texttt{fork()} system call. Every process on the system is created this
+way except for \texttt{init}, which is created by the kernel. Every process
+is forked from init or one of init's descendants.
 \subsection{BSD}
+Like Linux, a BSD process contains information about an executing program.
+Processes in BSD have PIDs, file descriptors, and many other resources
+similar to Linux processes. However, unlike Linux processes, BSD processes
+do not contain executing code. Instead, each process is a container that
+holds threads. In it's simplest form, an executing process on BSD is a
+combination of a process and a single executing thread.
 \subsection{Windows}
-%
+The Windows kernel stores processes in an object called the executive process
+object. Like BSD, and unlike Linux, Windows processes are not executing
+programs. Rather, they are simply containers that hold information about
+the process, such as PID and handles, and a collection of threads. One
+interesting difference between Windows processes and the Linux/BSD
+counterparts is notification that the process is starting. A Windows
+process will inform the user that the process is starting by changing
+the \textit{application start cursor} until the process makes a GUI call.
+Because Linux and BSD are not fundamentally linked to a graphical interface,
+such functionality is deferred to software outside of the kernel.
 \section{Threads}
 \subsection{Linux}
+Threads in Linux are almost identical to processes. For most purposes, the
+kernel treats them exactly the same. The only difference between a thread
+and a process is that a thread shares resources with another process, and
+possibly other threads.
 \subsection{BSD}
+On BSD, a thread is a unit of executing code, just like on Linux, but unlike
+Linux, threads are the \textit{only} unit of executing code. They are not
+simply another slightly different type of process like they are in Linux.
+
 \subsection{Windows}
 %
 \section{CPU Scheduling}
 \subsection{Linux}
+Linux uses a modular scheduler, enabling it to use different algorithms to
+schedule different types of processes, such as real-time processes. This
+section will focus on normal processes, which are managed by the Completely
+Fair Scheduler (CFS). CFS operates on the principle that every process
+should get a fair slice of CPU time. If there are $n$ process, then each
+process should get $1/n$ of the CPU. CFS keeps track of the time each
+process has been running on each processor, called the virtual runtime.
+When it comes time to decide which process should be run next, CFS simply
+picks the process with the smallest virtual runtime. The process is allowed
+to run for a certain amount of time, called the targetted latency. The
+targetted latency may change based on the processes \texttt{nice} value.
+point it is put back on the queue and the process with the lower vruntime
+is chosen to run next. 
 \subsection{BSD}
+BSD uses the ULE scheduler. Like CFS, the ULE scheduler tries to give
+interactive programs, which tend to use less CPU time, higher priority
+in order to increase responsiveness. However, the method by which the ULE
+scheduler goes about this is different. On a BSD system, every
+process is assigned a priority by the scheduler.
+When it is time to choose a process to run, the scheduler selects the
+highest priority process, which is allowed to run for a fixed duration.
+Processes that use their entire timeslice have their priority lowered, and
+are sent to the back of the queue. Process that do not use their entire
+timeslice, because they blocked, do not have their priority changed.
+Finally, processes that have been idle for a long time have their priority
+raised again.
 \subsection{Windows}
+Like Linux and BSD, Windows uses premptive scheduling, meaning the kernel
+can decide to perform a context switch on a process at any time. Also like
+both the Linux and BSD schedulers, it attempts to keep processes running
+on the same core. This is called processor affinity.
+The Windows scheduler is based on a priority system, more like BSD than
+Linux. One key difference between the Windows scheduler and both the
+BSD and Linux schedulers is that a Windows process is not guaranteed to
+finish its entire timeslice (or quantum). If another another process with
+a higher priority becomes ready to run while a lower priority process is
+running, it may be prempted in the middle of its quantum in favor of the
+higher priority process. When a Windows process finishes its quantum
+early, its priority is boosted in order to boost performance of interactive
+applications. 
 %
 % An example of a floating figure using the graphicx package.
 % Note that \label must occur AFTER (or within) \caption.

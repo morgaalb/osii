@@ -6,3 +6,6 @@
 # Ignore compiled junk
 *.o
 
+# And zipped files
+*.bz2
+

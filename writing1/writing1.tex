@@ -519,7 +519,8 @@ that the program as allocated to it, including a unique process id,
 file descriptors, and more. New processes are created using the
 \texttt{fork()} system call. Every process on the system is created this
 way except for \texttt{init}, which is created by the kernel. Every process
-is forked from init or one of \texttt{init}'s descendants.\cite{linux-kernel-dev}
+is forked from init or one of \texttt{init}'s descendants
+\cite{linux-kernel-dev}.
 \subsection{BSD}
 Like Linux, a BSD process contains information about an executing program.
 Processes in BSD have PIDs, file descriptors, and many other resources
@@ -528,7 +529,8 @@ do not contain executing code. Instead, each process is a container that
 holds threads. It is the threads, and only the threads, that actually
 execute the program.
 In its simplest form, an executing process on BSD is a
-combination of a process and a single executing thread.\cite{des-imp-bsd-os}
+combination of a process and a single executing thread
+\cite{des-imp-bsd-os}.
 \subsection{Windows}
 The Windows kernel stores processes in an object called the executive process
 object. Like BSD, and unlike Linux, Windows processes are not executing
@@ -539,25 +541,26 @@ counterparts is the notification that the process is starting. A Windows
 process will inform the user that the process is starting by changing
 the \textit{application start cursor} until the process makes a GUI call.
 Because Linux and BSD are not fundamentally linked to a graphical user 
-interface, this sort of functionality is not provided inside the kernel.
-\cite{win-int-one}
+interface, this sort of functionality is not provided inside the kernel
+\cite{win-int-one}.
 %
 \section{Threads}
 \subsection{Linux}
 Threads in Linux are almost identical to processes. For most purposes, the
 kernel treats them exactly the same. The only difference between a thread
 and a process is that a thread shares resources with another process, and
-possibly other threads.\cite{linux-kernel-dev}
+possibly other threads
+\cite{linux-kernel-dev}.
 \subsection{BSD}
-On BSD, a thread is a unit of executing code, just like on Windows, but unlike
+On BSD, a thread is a unit of executing code, just like on Linux, but unlike
 Linux, threads are the \textit{only} unit of executing code. They are not
-simply a different type of process like they are in Linux.
-\cite{des-imp-bsd-os}
+simply a different type of process like they are in Linux
+\cite{des-imp-bsd-os}.
 \subsection{Windows}
 Windows threads have more in common with BSD threads than they do
 Linux threads. On Windows, a thread is an object that represents executing
 code. Threads live inside processes, which are merely objects that hold
-the threads, rather than run themselves.\cite{win-int-one}
+the threads, rather than run themselves\cite{win-int-one}.
 %
 \section{CPU Scheduling}
 \subsection{Linux}
@@ -570,32 +573,40 @@ process should get $1/n$ of the CPU. CFS keeps track of the time each
 process has been running on each processor, called the virtual runtime.
 When it comes time to decide which process should be run next, CFS simply
 picks the process with the smallest virtual runtime. The process is allowed
-to run for a certain amount of time, called the targetted latency. The
-targetted latency may change based on the processes \texttt{nice} value.
-point it is put back on the queue and the process with the lower vruntime
-is chosen to run next.\cite{linux-kernel-dev}
+to run for a certain amount of time, called the targeted latency. The
+targeted latency may change based on the processes \texttt{nice} value,
+with ``nicer'' processes running for less time, allowing not-so-nice
+processes more time on the CPU.
+After the timeslice is finished, the process is put back on
+a priority queue, and the process with the lower vruntime
+is chosen to run next\cite{linux-kernel-dev}.
 \subsection{BSD}
 BSD uses the ULE scheduler. Like CFS, the ULE scheduler tries to give
 interactive programs, which tend to use less CPU time, higher priority
 in order to increase responsiveness. However, the method by which the ULE
-scheduler goes about this is different. On a BSD system, every
-process is assigned a priority by the scheduler.
-When it is time to choose a process to run, the scheduler selects the
-highest priority process, which is allowed to run for a fixed duration.
+scheduler goes about this is different. The ULE scheduler is divided into
+two parts: the high level scheduler and low level scheduler. The high level
+scheduler runs relatively infrequently compared the the low level scheduler,
+and assigns priorities to processes, inserting them into a
+priority queue. The low level scheduler simply picks the process with
+the highest priority off of the queue and lets it run, similiar to the
+way that CFS selects the process with the lowest virtual runtime.
+
 Processes that use their entire timeslice have their priority lowered, and
 are sent to the back of the queue. Process that do not use their entire
 timeslice, because they blocked, do not have their priority changed.
 Finally, processes that have been idle for a long time have their priority
-raised again.\cite{des-imp-bsd-os}
+raised again\cite{des-imp-bsd-os}.
 \subsection{Windows}
 Like Linux and BSD, Windows uses premptive scheduling, meaning the kernel
 can decide to perform a context switch on a process at any time. Also like
-both the Linux and BSD schedulers, it attempts to keep processes running
-on the same core. This is called processor affinity.
+both the Linux and BSD schedulers, it exercises \textit{processor affinity},
+meaning it attempts to keep processes running
+on the same core.
 The Windows scheduler is based on a priority system, more like BSD than
-Linux, although Windows adds a new twist to the priority system. Every
+Linux, although Windows adds a new twist. Every
 thread has a \textit{base priority}. The base priority
-of a thread typically doesn't change, but the Windows scheduler decides
+of a thread typically doesn't change, but when the Windows scheduler decides
 that a process should be run next (if, for example, it hasn't run in a
 long time), it will give it a \textit{boost}. The boost will temporarily
 give the process a higher priority, called the \textit{current priority},
@@ -603,25 +614,30 @@ which will send it futher up the queue.
 
 One key difference between the Windows scheduler and both the
 BSD and Linux schedulers is that a Windows process is not guaranteed to
-finish its entire timeslice (or quantum). If another another process with
+finish its entire timeslice (or quantum). If another process with
 a higher priority becomes ready to run while a lower priority process is
 running, it may be prempted in the middle of its quantum in favor of the
 higher priority process.
 
 When a process finishes its quantum, the Windows scheduler runs the
-next highest-priority task on the 
-When a Windows process finishes its quantum
+next highest-priority task on the scheduling queue.
+If that process finished its quantum
 early, its priority is boosted in order to boost performance of interactive
-applications. There are several other reasons that the Windows scheduler
-might boost processes that will not be enumerated here.
+applications. Priority may also be boosted for a number of other reasons,
+including (but not limited to) 
+after a process completes certain I/O operations, after a
+process completes a wait on a kernel object, and after it has been ready
+(but not running) for 4 seconds.
 
 Unlike the Linux and BSD schedulers, the Windows scheduler does not
 let each process on the system run in a round-robin style fashion. This
 might be particularly bad for media applications. A music player running at
 a low priority on Windows might never get to run. Windows avoids this
 problem on the client versions of Windows by providing the MultiMedia
-Class Scheduler Service, or MMCSS. 
-\cite{win-int-one}
+Class Scheduler Service, or MMCSS. MMCSS is a user-space application
+that changes the priority of multimedia threads to avoid
+starvarion of multimedia applications
+\cite{win-int-one}.
 %
 \section{Conclusion}
 Processes and threads on Windows and BSD follow a similiar pattern,

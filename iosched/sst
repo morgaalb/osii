@@ -1,0 +1,10 @@
+#!/bin/bash
+
+while true
+do
+	F=$(shuf -n 1 ~/allfiles3)
+	cat $F > /dev/null &> /dev/null &
+	dd if=/dev/zero of=~/zeroes bs=100MB count=1 &
+	dd if=/dev/zero of=~/zeroes2 bs=100MB count=1
+	rm -f ~/zeroes ~/zeroes2
+done

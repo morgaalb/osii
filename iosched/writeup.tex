@@ -357,7 +357,8 @@
 \usepackage[usenames, dvipsnames]{color}
 \usepackage{tabularx}
 \usepackage[strict]{chngpage}
-\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{wrapfig}
 
 \lstset {
 	language=C,
@@ -465,7 +466,7 @@
 \vspace*{2in}
 \begin{center}
 \huge
-Processes, Threads, and Schedulers\\
+Project 2: I/O Elevators\\
 \normalsize
 Operating Systems II\\
 Spring 2016\\
@@ -476,17 +477,15 @@ Albert Morgan
 \textbf{Abstract}
 \end{center}
 \begin{adjustwidth}{2in}{2in}
-In his report, \textit{Processes, Threads, and Schedulers}, OSU
-computer science major Albert Morgan compares processes, threads,
-and schedulers in the Linux, BSD, and Windows operating systems.
-Morgan's report uses research from three different technical texts,
-and summarizes it side-by-side to give a comparison of each
-operating system.
-Morgan uses these comparisons to make the point that Linux and BSD
-share similiar schedulers, and Windows and BSD have a similiar
-concept of processes. Morgan's report is written in an academic
-for an audience already familiar with the internal components
-of operating systems.
+In his report on Project 1: Getting Acquainted, OSU computer science
+major Albert Morgan explains the steps necessary to set up a virtual
+machine using qemu on a linux system and walks the reader through
+his solution to the concurrency exercise. Using actual commands used
+to set up the VM, Morgan walks the reader through the process that
+he used. Using code examples from his concurrency exercise, Morgan
+explains overall architecture of the program and how specific functions
+work. Morgan's report is written in an academic manner for those who want
+to learn how to use VMs and concurrent programming.
 \end{adjustwidth}
 \newpage
 \pagestyle{headings}
@@ -494,7 +493,12 @@ of operating systems.
 %\begin{IEEEkeywords}
 %IEEE, IEEEtran, journal, \LaTeX, paper, template.
 %\end{IEEEkeywords}
-%
+
+
+
+
+
+
 % For peer review papers, you can put extra information on the cover
 % page as needed:
 % \ifCLASSOPTIONpeerreview
@@ -506,152 +510,162 @@ of operating systems.
 %\IEEEpeerreviewmaketitle
 %
 \section{Introduction}
-This report will compare the way that Linux, BSD, and
-Windows handle processes, threads, and CPU scheduling. Each section
-will compare how each operating system handles one of these specific
-functions.
+This report will document the process of writing a new I/O scheduler
+for the linux operating system.
 %
-\section{Processes}
-\subsection{Linux}
-A process on a Linux system is more than just an executing program.
-In addition to this, a process holds information about the resources
-that the program as allocated to it, including a unique process id,
-file descriptors, and more. New processes are created using the
-\texttt{fork()} system call. Every process on the system is created this
-way except for \texttt{init}, which is created by the kernel. Every process
-is forked from init or one of \texttt{init}'s descendants
-\cite{linux-kernel-dev}.
-\subsection{BSD}
-Like Linux, a BSD process contains information about an executing program.
-Processes in BSD have PIDs, file descriptors, and many other resources
-similar to Linux processes. However, unlike Linux processes, BSD processes
-do not contain executing code. Instead, each process is a container that
-holds threads. It is the threads, and only the threads, that actually
-execute the program.
-In its simplest form, an executing process on BSD is a
-combination of a process and a single executing thread
-\cite{des-imp-bsd-os}.
-\subsection{Windows}
-The Windows kernel stores processes in an object called the executive process
-object. Like BSD, and unlike Linux, Windows processes are not executing
-programs. Rather, they are simply containers that hold information about
-the process, such as PID and file handlers, and a collection of threads. One
-interesting difference between Windows processes and the Linux/BSD
-counterparts is the notification that the process is starting. A Windows
-process will inform the user that the process is starting by changing
-the \textit{application start cursor} until the process makes a GUI call.
-Because Linux and BSD are not fundamentally linked to a graphical user 
-interface, this sort of functionality is not provided inside the kernel
-\cite{win-int-one}.
-%
-\section{Threads}
-\subsection{Linux}
-Threads in Linux are almost identical to processes. For most purposes, the
-kernel treats them exactly the same. The only difference between a thread
-and a process is that a thread shares resources with another process, and
-possibly other threads
-\cite{linux-kernel-dev}.
-\subsection{BSD}
-On BSD, a thread is a unit of executing code, just like on Linux, but unlike
-Linux, threads are the \textit{only} unit of executing code. They are not
-simply a different type of process like they are in Linux
-\cite{des-imp-bsd-os}.
-\subsection{Windows}
-Windows threads have more in common with BSD threads than they do
-Linux threads. On Windows, a thread is an object that represents executing
-code. Threads live inside processes, which are merely objects that hold
-the threads, rather than run themselves\cite{win-int-one}.
-%
-\section{CPU Scheduling}
-\subsection{Linux}
-Linux uses a modular scheduler, enabling it to use different algorithms to
-schedule different types of processes, such as real-time processes. This
-section will focus on normal processes, which are managed by the Completely
-Fair Scheduler (CFS). CFS operates on the principle that every process
-should get a fair slice of CPU time. If there are $n$ process, then each
-process should get $1/n$ of the CPU. CFS keeps track of the time each
-process has been running on each processor, called the virtual runtime.
-When it comes time to decide which process should be run next, CFS simply
-picks the process with the smallest virtual runtime. The process is allowed
-to run for a certain amount of time, called the targeted latency. The
-targeted latency may change based on the processes \texttt{nice} value,
-with ``nicer'' processes running for less time, allowing not-so-nice
-processes more time on the CPU.
-After the timeslice is finished, the process is put back on
-a priority queue, and the process with the lower vruntime
-is chosen to run next\cite{linux-kernel-dev}.
-\subsection{BSD}
-BSD uses the ULE scheduler. Like CFS, the ULE scheduler tries to give
-interactive programs, which tend to use less CPU time, higher priority
-in order to increase responsiveness. However, the method by which the ULE
-scheduler goes about this is different. The ULE scheduler is divided into
-two parts: the high level scheduler and low level scheduler. The high level
-scheduler runs relatively infrequently compared the the low level scheduler,
-and assigns priorities to processes, inserting them into a
-priority queue. The low level scheduler simply picks the process with
-the highest priority off of the queue and lets it run, similiar to the
-way that CFS selects the process with the lowest virtual runtime.
+\section{Design}
+This implementation of the SSTF I/O scheduler uses two different request
+queues, a
+\textit{before} queue and an \textit{after} queue. These two queues store
+requests in ascending order based on the sector of the start of the request.
+When a new request
+arrives, its position on the disk is compared with the current position
+of the disk's head. If the new request comes before the head, then
+it is inserted in the before queue,
+otherwise it is inserted in the after queue.
 
-Processes that use their entire timeslice have their priority lowered, and
-are sent to the back of the queue. Process that do not use their entire
-timeslice, because they blocked, do not have their priority changed.
-Finally, processes that have been idle for a long time have their priority
-raised again\cite{des-imp-bsd-os}.
-\subsection{Windows}
-Like Linux and BSD, Windows uses premptive scheduling, meaning the kernel
-can decide to perform a context switch on a process at any time. Also like
-both the Linux and BSD schedulers, it exercises \textit{processor affinity},
-meaning it attempts to keep processes running
-on the same core.
-The Windows scheduler is based on a priority system, more like BSD than
-Linux, although Windows adds a new twist. Every
-thread has a \textit{base priority}. The base priority
-of a thread is inherited from its process, and typically doesn't change,
-When the Windows scheduler decides
-that a process should be run next (if, for example, it hasn't run in a
-long time), it will give it a \textit{boost}. The boost will temporarily
-give the process a higher priority, called the \textit{current priority},
-which will send it futher up the queue.
+When an item is inserted into a queue, the entire linked list is
+iterated through in a linear fashion, and the new request is inserted
+into the appropriate sorted location. In this way, the before and
+after queue are maintained as sorted queues.
 
-One key difference between the Windows scheduler and both the
-BSD and Linux schedulers is that a Windows process is not guaranteed to
-finish its entire timeslice (or quantum). If another process with
-a higher priority becomes ready to run while a lower priority process is
-running, it may be prempted in the middle of its quantum in favor of the
-higher priority process.
+When a dispatch is reqeuested, the SSTF scheduler looks at the \textit{first}
+item in the after queue, and the \textit{last} item in the before queue.
+Whichever request is closer to the current position of the head gets
+dispatched. While dispatching, the SSTF scheduler keeps track of the
+last sector in the request, and assumes that the head will be in that position
+for the next request.
 
-When a process finishes its quantum, the Windows scheduler runs the
-next highest-priority task on the scheduling queue.
-If that process finished its quantum
-early, its priority is boosted in order to boost performance of interactive
-applications. Priority may also be boosted for a number of other reasons,
-including (but not limited to) 
-after a process completes certain I/O operations, after a
-process completes a wait on a kernel object, and after it has been ready
-(but not running) for 4 seconds.
+The SSTF scheduler does not veto any potential merges, but the implemention
+of the \texttt{elevator\_former\_req\_fn} and \textt{elevator\_latter\_req\_fn}
+does not jump lists, so requests in different queues will not be
+coalesced.
 
-Unlike the Linux and BSD schedulers, the Windows scheduler does not
-let each process on the system run in a round-robin style fashion. This
-might be particularly bad for media applications. A music player running at
-a low priority on Windows might never get to run. Windows avoids this
-problem on the client versions of Windows by providing the MultiMedia
-Class Scheduler Service, or MMCSS. MMCSS is a user-space application
-that changes the priority of multimedia threads to avoid
-starvarion of multimedia applications
-\cite{win-int-one}.
+\section{Testing}
+% The very first letter is a 2 line initial drop letter followed
+% by the rest of the first word in caps.
+% 
+% form to use if the first word consists of a single letter:
+% \IEEEPARstart{A}{demo} file is ....
+% 
+% form to use if you need the single drop letter followed by
+% normal text (unknown if ever used by the IEEE):
+% \IEEEPARstart{A}{}demo file is ....
+% 
+% Some journals put the first two words in caps:
+% \IEEEPARstart{T}{his demo} file is ....
+% 
+% Here we have the typical use of a "T" for an initial drop letter
+% and "HIS" in caps to complete the first word.
+Testing was performed by logging requests as they completed and
+graphing the results so the correct behavior could be manually
+verified.
+
+The start time, end time, and sector of each request was logged upon
+completed, by calling the logging function from the
+\texttt{elevator\_completed\_req\_fn} hook.
+
+\lstinputlisting[language=c, firstline=26, lastline=35,
+caption={Optional SSTF Logging features.}]
+{sstf-iosched.c}
+
+After starting qemu with the new SSTF scheduler enabled, a script
+had to be written to stress-test the new scheduler and generate
+data for testing. This turned out to be harder than expected.
+In the first attempt, a file containing all the files in the operating
+system was created (with the exception of files in \texttt{/dev} and
+\texttt{/proc}, and a bash script would randomly \texttt{cat} a file
+in an infinite loop. This did not generate enough requests to back
+up the request queue and provide interesting and testable results.
+After all, if there is only one request on the queue, then there
+is no need to prioritize. After some modifications, the following
+script was used to test the new scheduler:
+
+\lstinputlisting[language=bash, 
+caption={Final stress testing script. The file \texttt{allfiles3} contains a 
+list of all normal files on the drive.}]{sst}
+
+In order to get this information out of the qemu environment, 
+the \texttt{tee} command was used to pipe the output to a log file,
+and the \texttt{grep} utility was used to only keep lines containing
+``SSTF\_LOG''. This data was then processed by a python script
+and graphed with matplotlib. Figure \ref{fig:sstf} shows
+resulting graph, and figure \ref{fig:sstfzoom} shows a zoomed in detail
+view. For comparison, \ref{fig:noopzoom} shows a similiar zoomed in
+section of the same logging and graphing procedure applied to the
+noop I/O scheduler.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{sstf.eps}
+\caption{Each horizontal bar represents a request, from start to finish.
+The blue line indicates the location of the disk head.}
+\label{fig:sstf}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{sstfzoom.eps}
+\caption{A close-up view of a portion of figure \ref{fig:sstf}}
+\label{fig:sstfzoom}
+\end{figure}
 %
-\section{Conclusion}
-Processes and threads on Windows and BSD follow a similiar pattern,
-with processes
-acting as containers that hold the executing threads. However, on Linux,
-threads are just a special type of process. The schedulers on Linux
-and BSD work relatively similarly, by raising or lowering a processes
-priority depending on how much CPU time it is taking, although the exact
-methods used differ.
-The Windows scheduler is a completely different beast, with only the highest
-priority processes being run, and the scheduler making the
-decision to boost the priority of processes for various reasons.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{noopzoom.eps}
+\caption{A close-up view, similiar to figure \ref{fig:sstfzoom}, but this one shows
+the behavior of the noop I/O scheduler}
+\label{fig:noopzoom}
+\end{figure}
+
+The black bars represent individual requests, the sector they start at,
+and the time they take (in jiffies) from start to finish. The blue line
+is the estimated location of the drive's head. As you can see in
+\ref{fig:sstfzoom}, the I/O scheduler is always servicing the closest
+request. For example, during between jiffies 400 and 600, there are
+several requests around the 5,100,000 sector that are being ignored
+in favor of newer requests that are closer to the head. Compare this
+behavior to figure \ref{fig:noopzoom}, where the disk head jumps back and
+forth between distant sectors in order to service requests in the order
+they were created in.
+
+The second part of testing was the merging element. A trace statement
+was placed in the \texttt{elevator\_merged\_fn} hook to ensure that
+merging was taking place. These trace statements revealed that it was.
 %
+\section{Commit Log}
+\begin{tabular}{|l | l |}
+\hline
+\textbf{Date + Time} & \textbf{Commit Notes}\\\hline
+Sun Apr 10 21:28:54 2016 -0700 & Configured Kernel\\\hline
+\end{tabular}
+
+\section{Work Log}
+\begin{tabularx}{\linewidth}{| l | X | l |}
+\hline
+\textbf{Date + Time} & \textbf{Notes} & \textbf{Work Done}\\\hline
+%
+Mar 31 & Compiled kernel and got VM running. Finished everything
+except actually installing the new kernel on the VM. & 2 hours\\\hline
+%
+Apr 4 & Got \LaTeX working with IEEEtran template. Wrote new
+environment to help with listing command line options, and
+documented my work done on March 31. & 2 hours\\\hline
+%
+Apr 5 & Finished documenting work done on March 31 & 1 hour\\\hline
+%
+Apr 9 & Read pthread tutorials and completed concurrency 
+exercise. & 4.5 hours\\\hline
+%
+Apr 10 & Make output for concurrency exercise better, and
+wrote section two of the report. Tested concurrency exercise on
+windows. Installed the compiled kernel on the VM. Finished
+entire report except the abstract, and some title page
+tweaks. & 6 hours\\\hline
+%
+Apr 11 & Wrote abstract and proofread paper. Submitted assignment
+& 1.5 hour\\\hline
+\end{tabularx}
 % An example of a floating figure using the graphicx package.
 % Note that \label must occur AFTER (or within) \caption.
 % For figures, \caption should occur after the \includegraphics.
@@ -788,9 +802,6 @@ decision to boost the priority of processes for various reasons.
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
 % (used to reserve space for the reference number labels box)
-
-\bibliography{mybib}
-\bibliographystyle{IEEEtran}
 
 % biography section
 % 

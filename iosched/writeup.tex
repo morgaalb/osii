@@ -394,7 +394,7 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{\vspace{2in}Project 1: Getting Acquainted}
+\title{\vspace{2in}Project 2: I/O Elevators}
 %
 %
 % author names and IEEE memberships
@@ -430,7 +430,7 @@
 
 % The paper headers
 \markboth{Operating Systems II, Oregon State University}%
-{Assignment 1}
+{Project 2}
 % The only time the second header will appear is for the odd numbered pages
 % after the title page when using the twoside option.
 % 
@@ -477,15 +477,16 @@ Albert Morgan
 \textbf{Abstract}
 \end{center}
 \begin{adjustwidth}{2in}{2in}
-In his report on Project 1: Getting Acquainted, OSU computer science
-major Albert Morgan explains the steps necessary to set up a virtual
-machine using qemu on a linux system and walks the reader through
-his solution to the concurrency exercise. Using actual commands used
-to set up the VM, Morgan walks the reader through the process that
-he used. Using code examples from his concurrency exercise, Morgan
-explains overall architecture of the program and how specific functions
-work. Morgan's report is written in an academic manner for those who want
-to learn how to use VMs and concurrent programming.
+In his report on Project 2: I/O Elevators, OSU computer science
+major Albert Morgan explains the highlights of his implementation
+of the shortest seek-time first elevator alogorithm. Using descriptions
+of the algorithms used and graphs generated from the output, Morgan
+explains his thought process and proves the correctness of his
+solution. Morgan comes to the conclusion that the Linux kernel is not
+as frightening as it appears on the surface, and it is possible for even
+an inexperienced kernel developer to work on it.
+Morgan's report is written in an academic manner for readers
+interested in the linux kernel.
 \end{adjustwidth}
 \newpage
 \pagestyle{headings}
@@ -493,12 +494,6 @@ to learn how to use VMs and concurrent programming.
 %\begin{IEEEkeywords}
 %IEEE, IEEEtran, journal, \LaTeX, paper, template.
 %\end{IEEEkeywords}
-
-
-
-
-
-
 % For peer review papers, you can put extra information on the cover
 % page as needed:
 % \ifCLASSOPTIONpeerreview
@@ -511,35 +506,54 @@ to learn how to use VMs and concurrent programming.
 %
 \section{Introduction}
 This report will document the process of writing a new I/O scheduler
-for the linux operating system.
+for the linux operating system. The overview of the alogorithm will
+be presented, and details about the testing done will be given.
 %
 \section{Design}
-This implementation of the SSTF I/O scheduler uses two different request
+This scheduler implements the C-LOOK algorithm. It starts at low sector
+numbers, and services requests in ascending order until there are no
+new requests in front of it. Then, it goes back to the lowest numbered
+request and starts again.
+
+The implementation of the SSTF I/O scheduler uses two different request
 queues, a
-\textit{before} queue and an \textit{after} queue. These two queues store
-requests in ascending order based on the sector of the start of the request.
+`current' queue and a `next' queue. These two queues are implemented using
+an array of two linked lists, and a variable, \texttt{cur\_list} determines
+which one the current queue is.
 When a new request
 arrives, its position on the disk is compared with the current position
-of the disk's head. If the new request comes before the head, then
-it is inserted in the before queue,
-otherwise it is inserted in the after queue.
+of the disk's head. If the new request comes before the head, 
+then it is inserted in the next queue,
+otherwise it is inserted in the `current' queue.
+
+\lstinputlisting[language=c, firstline=20, lastline=24,
+caption={The SSTF data structure, containing the two list heads,
+current list pointer, and the last read sector},
+label={sstdata}]
+{sstf-iosched.c}
 
 When an item is inserted into a queue, the entire linked list is
-iterated through in a linear fashion, and the new request is inserted
-into the appropriate sorted location. In this way, the before and
-after queue are maintained as sorted queues.
+iterated through and the new request is inserted
+into the appropriate sorted location, based on the start sector of the
+request. In this way, the current and 
+next queues are maintained as sorted queues.
 
-When a dispatch is reqeuested, the SSTF scheduler looks at the \textit{first}
-item in the after queue, and the \textit{last} item in the before queue.
-Whichever request is closer to the current position of the head gets
-dispatched. While dispatching, the SSTF scheduler keeps track of the
+
+When a new request comes is, first the scheduler makes sure that the
+current queue is populated. If it is not, then it knows it has reached
+the highest sector item in the queue, and it needs to go back to the 
+beginning. The next queue becomes
+the current queue and vice-versa. Then, the first item in the current
+queue is popped off and dispatched.
+While dispatching, the SSTF scheduler keeps track of the
 last sector in the request, and assumes that the head will be in that position
-for the next request.
+for the next request. This is the same technique used by the deadline and cfq
+I/O schedulers.
 
 The SSTF scheduler does not veto any potential merges, but the implemention
-of the \texttt{elevator\_former\_req\_fn} and \textt{elevator\_latter\_req\_fn}
-does not jump lists, so requests in different queues will not be
-coalesced.
+of the \texttt{elevator\_former\_req\_fn} and \texttt{elevator\_latter\_req\_fn}
+does not mix the current and next queues, so requests in different 
+queues will not be coalesced.
 
 \section{Testing}
 % The very first letter is a 2 line initial drop letter followed
@@ -558,40 +572,43 @@ coalesced.
 % Here we have the typical use of a "T" for an initial drop letter
 % and "HIS" in caps to complete the first word.
 Testing was performed by logging requests as they completed and
-graphing the results so the correct behavior could be manually
-verified.
+graphing the results so the correct behavior could be verified
+verified. The logging function is shown in listing~\ref{logfun}.
 
 The start time, end time, and sector of each request was logged upon
-completed, by calling the logging function from the
+completion by calling the logging function from the
 \texttt{elevator\_completed\_req\_fn} hook.
 
 \lstinputlisting[language=c, firstline=26, lastline=35,
-caption={Optional SSTF Logging features.}]
+caption={Optional SSTF Logging features},
+label={logfun}]
 {sstf-iosched.c}
 
 After starting qemu with the new SSTF scheduler enabled, a script
 had to be written to stress-test the new scheduler and generate
 data for testing. This turned out to be harder than expected.
 In the first attempt, a file containing all the files in the operating
-system was created (with the exception of files in \texttt{/dev} and
-\texttt{/proc}, and a bash script would randomly \texttt{cat} a file
+system was created (with the exception of files in \texttt{dev} and
+\texttt{proc}), and a bash script would randomly \texttt{cat} different files
 in an infinite loop. This did not generate enough requests to back
 up the request queue and provide interesting and testable results.
-After all, if there is only one request on the queue, then there
+If there is only ever one request on the queue, then there
 is no need to prioritize. After some modifications, the following
-script was used to test the new scheduler:
+script was used to test the new scheduler, which prints
+out the contents of a random file, and writes zeroes into two different
+files, all at the same time:
 
 \lstinputlisting[language=bash, 
 caption={Final stress testing script. The file \texttt{allfiles3} contains a 
 list of all normal files on the drive.}]{sst}
 
 In order to get this information out of the qemu environment, 
-the \texttt{tee} command was used to pipe the output to a log file,
-and the \texttt{grep} utility was used to only keep lines containing
+qemu was ran piped through \texttt{tee} and output to a log file.
+The \texttt{grep} utility was later used to only keep lines containing
 ``SSTF\_LOG''. This data was then processed by a python script
 and graphed with matplotlib. Figure \ref{fig:sstf} shows
 resulting graph, and figure \ref{fig:sstfzoom} shows a zoomed in detail
-view. For comparison, \ref{fig:noopzoom} shows a similiar zoomed in
+view. For comparison, figure~\ref{fig:noopzoom} shows a similiar zoomed in
 section of the same logging and graphing procedure applied to the
 noop I/O scheduler.
 
@@ -599,7 +616,9 @@ noop I/O scheduler.
 \centering
 \includegraphics[width=\textwidth]{sstf.eps}
 \caption{Each horizontal bar represents a request, from start to finish.
-The blue line indicates the location of the disk head.}
+The blue line indicates the location of the disk head. Note that the
+start time is when the request was created, not when it was handed to
+the scheduler.}
 \label{fig:sstf}
 \end{figure}
 
@@ -620,11 +639,11 @@ the behavior of the noop I/O scheduler}
 
 The black bars represent individual requests, the sector they start at,
 and the time they take (in jiffies) from start to finish. The blue line
-is the estimated location of the drive's head. As you can see in
-\ref{fig:sstfzoom}, the I/O scheduler is always servicing the closest
-request. For example, during between jiffies 400 and 600, there are
-several requests around the 5,100,000 sector that are being ignored
-in favor of newer requests that are closer to the head. Compare this
+is the estimated location of the drive's head.
+Examining figure~\ref{fig:sstfzoom}, the upward motion of the head
+is clearly visible. When the head reaches the highest-sector request,
+it goes back down and services the lowest-sector request.
+Compare this
 behavior to figure \ref{fig:noopzoom}, where the disk head jumps back and
 forth between distant sectors in order to service requests in the order
 they were created in.
@@ -634,44 +653,65 @@ was placed in the \texttt{elevator\_merged\_fn} hook to ensure that
 merging was taking place. These trace statements revealed that it was.
 %
 \section{Commit Log}
-\begin{tabular}{|l | l |}
+\begin{tabularx}{\linewidth}{| l | X |}
 \hline
-\textbf{Date + Time} & \textbf{Commit Notes}\\\hline
-Sun Apr 10 21:28:54 2016 -0700 & Configured Kernel\\\hline
-\end{tabular}
-
+\textbf{Date} & \textbf{Commit message}\\\hline
+2016-4-26 & Implemented C-LOOK\\\hline
+%
+2016-4-24 & Added comments and improved spacing\\\hline
+%
+2016-4-24 & Fixed bug that put requests into wrong before/after queue.\\\hline
+%
+2016-4-23 & SSTF algorithm fully implemented.\\\hline
+%
+2016-4-23 & Added before and after queues\\\hline
+%
+2016-4-23 & Updated module author/name\\\hline
+%
+2016-4-23 & Fix syntatic bugs\\\hline
+%
+2016-4-23 & Semantic changes to sstf\\\hline
+%
+2016-4-23 & Added logging to sstf\\\hline
+\end{tabularx}
+%
 \section{Work Log}
 \begin{tabularx}{\linewidth}{| l | X | l |}
 \hline
-\textbf{Date + Time} & \textbf{Notes} & \textbf{Work Done}\\\hline
+\textbf{Date} & \textbf{Notes} & \textbf{Work (hours)}\\\hline
+2016-4-26 & Implemented C-LOOK & 2\\\hline
 %
-Mar 31 & Compiled kernel and got VM running. Finished everything
-except actually installing the new kernel on the VM. & 2 hours\\\hline
+2016-4-25 & Proofreading and patch & 2\\\hline
 %
-Apr 4 & Got \LaTeX working with IEEEtran template. Wrote new
-environment to help with listing command line options, and
-documented my work done on March 31. & 2 hours\\\hline
+2016-4-24 & Fixed charts for use in with \LaTeX. Wrote documentation. & 6\\\hline
 %
-Apr 5 & Finished documenting work done on March 31 & 1 hour\\\hline
+2016-4-23 & Implemented and debugged SSTF. Generated charts. & 10\\\hline
 %
-Apr 9 & Read pthread tutorials and completed concurrency 
-exercise. & 4.5 hours\\\hline
+2016-4-21 & Research into Linux I/O schedulers; copied noop elevator into new file and got Linux to compile and run it. & 5\\\hline
 %
-Apr 10 & Make output for concurrency exercise better, and
-wrote section two of the report. Tested concurrency exercise on
-windows. Installed the compiled kernel on the VM. Finished
-entire report except the abstract, and some title page
-tweaks. & 6 hours\\\hline
-%
-Apr 11 & Wrote abstract and proofread paper. Submitted assignment
-& 1.5 hour\\\hline
 \end{tabularx}
+%
+\section{Conclusion}
+The purpose of this assignment was to fully immerse students in Linux
+kernel development. Although a lot of things had to be learned before
+the assignment was completed, starting with the noop elevator and
+building on it was an excellent way to dive in to kernel development.
+
+Besides a lot of details about how the Linux kernel works and how to add
+new features, I learned that the Linux kernel is not as frightening as
+it appears on the surface, even though the documentation for some parts
+is practically nonexistant. However, because the Linux kernel is open source, it is
+always possible to simply read the code if you need to figure out  what
+a particular feature does. This is a technique that I used a lot during
+the course of this assignment.
+
 % An example of a floating figure using the graphicx package.
 % Note that \label must occur AFTER (or within) \caption.
 % For figures, \caption should occur after the \includegraphics.
 % Note that IEEEtran v1.7 and later has special internal code that
 % is designed to preserve the operation of \label within \caption
 % even when the captionsoff option is in effect. However, because
+
 % of issues like this, it may be the safest practice to put all your
 % \label just after \caption rather than within \caption{}.
 %

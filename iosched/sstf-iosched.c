@@ -15,11 +15,11 @@
 #include <linux/init.h>
 
 /* Define this to turn on very verbose logging */
-#undef SSTF_LOGGING
+#define SSTF_LOGGING
 
 struct sstf_data {
-	struct list_head before;
-	struct list_head after;
+	struct list_head list[2];
+	int cur_list;
 	sector_t last_sector;
 };
 
@@ -46,62 +46,23 @@ static void sstf_merged(struct request_queue *q, struct request *rq, int type)
 	SSTF_PRINT("REQUEST HAS BEEN MERGED");
 }
 
-/* Final step in the dispatch process */
-static void sstf_dispatch_finalize(struct request_queue *q, struct request *rq)
-{
-	struct sstf_data *sd = q->elevator->elevator_data;
-	sd->last_sector = rq_end_sector(rq);
-	list_del_init(&rq->queuelist);
-	elv_dispatch_add_tail(q, rq);
-}
-
-/* Dispatch from the before list */
-static void sstf_dispatch_before(struct sstf_data *sd, struct request_queue *q)
-{
-	struct request *rq;
-	rq = list_last_entry(&sd->before, struct request, queuelist);
-	sstf_dispatch_finalize(q, rq);
-}
-
-/* DIspatch from the after list */
-static void sstf_dispatch_after(struct sstf_data *sd, struct request_queue *q)
-{
-	struct request *rq;
-	rq = list_first_entry(&sd->after, struct request, queuelist);
-	sstf_dispatch_finalize(q, rq);
-}
 
 /* Choose whether to dispatch from the before or after list */
 static int sstf_dispatch(struct request_queue *q, int force)
 {
 	struct sstf_data *sd = q->elevator->elevator_data;
-	sector_t bdist, adist;
+	struct request *rq;
 
-	if (list_empty(&sd->before) && list_empty(&sd->after))
+	if (list_empty(&sd->list[0]) && list_empty(&sd->list[1]))
 		return 0;
 
-	if (list_empty(&sd->before)) {
-		sstf_dispatch_after(sd, q);
-		return 1;
-	}
-	else if (list_empty(&sd->after)) {
-		sstf_dispatch_before(sd, q);
-		return 1;
-	}
-	
-	bdist = abs(blk_rq_pos(
-			list_last_entry(&sd->before, struct request, queuelist)) 
-			- sd->last_sector);
-	adist = abs(blk_rq_pos(
-			list_first_entry(&sd->after, struct request, queuelist)) 
-			- sd->last_sector);
-	
-	if (bdist < adist) {
-		sstf_dispatch_before(sd, q);
-	}
-	else {
-		sstf_dispatch_after(sd, q);
-	}
+	if (list_empty(&sd->list[sd->cur_list]))
+		sd->cur_list = !sd->cur_list;
+
+	rq = list_first_entry(&sd->list[sd->cur_list], struct request, queuelist);
+	sd->last_sector = rq_end_sector(rq);
+	list_del_init(&rq->queuelist);
+	elv_dispatch_add_tail(q, rq);
 
 	return 1;
 }
@@ -127,9 +88,9 @@ static void sstf_add_request(struct request_queue *q, struct request *rq)
 	struct sstf_data *sd = q->elevator->elevator_data;
 
 	if (sd->last_sector < blk_rq_pos(rq)) {
-		sstf_add_in_order(rq, &sd->after);
+		sstf_add_in_order(rq, &sd->list[sd->cur_list]);
 	} else {
-		sstf_add_in_order(rq, &sd->before);
+		sstf_add_in_order(rq, &sd->list[!sd->cur_list]);
 	}
 }
 
@@ -138,7 +99,7 @@ sstf_former_request(struct request_queue *q, struct request *rq)
 {
 	struct sstf_data *sd = q->elevator->elevator_data;
 
-	if (rq->queuelist.prev == &sd->before || rq->queuelist.prev == &sd->after)
+	if (rq->queuelist.prev == &sd->list[0] || rq->queuelist.prev == &sd->list[1])
 		return NULL;
 	return list_entry(rq->queuelist.prev, struct request, queuelist);
 }
@@ -148,7 +109,7 @@ sstf_latter_request(struct request_queue *q, struct request *rq)
 {
 	struct sstf_data *sd = q->elevator->elevator_data;
 
-	if (rq->queuelist.next == &sd->before || rq->queuelist.next == &sd->after)
+	if (rq->queuelist.next == &sd->list[0] || rq->queuelist.next == &sd->list[1])
 		return NULL;
 	return list_entry(rq->queuelist.next, struct request, queuelist);
 }
@@ -169,10 +130,12 @@ static int sstf_init_queue(struct request_queue *q, struct elevator_type *e)
 	}
 	eq->elevator_data = sd;
 
-	INIT_LIST_HEAD(&sd->before);
-	INIT_LIST_HEAD(&sd->after);
+	INIT_LIST_HEAD(&sd->list[0]);
+	INIT_LIST_HEAD(&sd->list[1]);
 
 	sd->last_sector = 0;
+
+	sd->cur_list = 0;
 
 	spin_lock_irq(q->queue_lock);
 	q->elevator = eq;
@@ -184,8 +147,8 @@ static void sstf_exit_queue(struct elevator_queue *e)
 {
 	struct sstf_data *sd = e->elevator_data;
 
-	BUG_ON(!list_empty(&sd->before));
-	BUG_ON(!list_empty(&sd->after));
+	BUG_ON(!list_empty(&sd->list[0]));
+	BUG_ON(!list_empty(&sd->list[1]));
 	kfree(sd);
 }
 

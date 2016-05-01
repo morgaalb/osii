@@ -1,0 +1,882 @@
+
+%% bare_jrnl.tex
+%% V1.4b
+%% 2015/08/26
+%% by Michael Shell
+%% see http://www.michaelshell.org/
+%% for current contact information.
+%%
+%% This is a skeleton file demonstrating the use of IEEEtran.cls
+%% (requires IEEEtran.cls version 1.8b or later) with an IEEE
+%% journal paper.
+%%
+%% Support sites:
+%% http://www.michaelshell.org/tex/ieeetran/
+%% http://www.ctan.org/pkg/ieeetran
+%% and
+%% http://www.ieee.org/
+
+%%*************************************************************************
+%% Legal Notice:
+%% This code is offered as-is without any warranty either expressed or
+%% implied; without even the implied warranty of MERCHANTABILITY or
+%% FITNESS FOR A PARTICULAR PURPOSE! 
+%% User assumes all risk.
+%% In no event shall the IEEE or any contributor to this code be liable for
+%% any damages or losses, including, but not limited to, incidental,
+%% consequential, or any other damages, resulting from the use or misuse
+%% of any information contained here.
+%%
+%% All comments are the opinions of their respective authors and are not
+%% necessarily endorsed by the IEEE.
+%%
+%% This work is distributed under the LaTeX Project Public License (LPPL)
+%% ( http://www.latex-project.org/ ) version 1.3, and may be freely used,
+%% distributed and modified. A copy of the LPPL, version 1.3, is included
+%% in the base LaTeX documentation of all distributions of LaTeX released
+%% 2003/12/01 or later.
+%% Retain all contribution notices and credits.
+%% ** Modified files should be clearly indicated as such, including  **
+%% ** renaming them and changing author support contact information. **
+%%*************************************************************************
+
+
+% *** Authors should verify (and, if needed, correct) their LaTeX system  ***
+% *** with the testflow diagnostic prior to trusting their LaTeX platform ***
+% *** with production work. The IEEE's font choices and paper sizes can   ***
+% *** trigger bugs that do not appear when using other class files.       ***                          ***
+% The testflow support page is at:
+% http://www.michaelshell.org/tex/testflow/
+
+
+
+\documentclass[10pt,journal,draftclsnofoot,onecolumn]{IEEEtran}
+%
+% If IEEEtran.cls has not been installed into the LaTeX system files,
+% manually specify the path to it like:
+% \documentclass[journal]{../sty/IEEEtran}
+
+
+
+
+
+% Some very useful LaTeX packages include:
+% (uncomment the ones you want to load)
+
+
+% *** MISC UTILITY PACKAGES ***
+%
+%\usepackage{ifpdf}
+% Heiko Oberdiek's ifpdf.sty is very useful if you need conditional
+% compilation based on whether the output is pdf or dvi.
+% usage:
+% \ifpdf
+%   % pdf code
+% \else
+%   % dvi code
+% \fi
+% The latest version of ifpdf.sty can be obtained from:
+% http://www.ctan.org/pkg/ifpdf
+% Also, note that IEEEtran.cls V1.7 and later provides a builtin
+% \ifCLASSINFOpdf conditional that works the same way.
+% When switching from latex to pdflatex and vice-versa, the compiler may
+% have to be run twice to clear warning/error messages.
+
+
+
+
+
+
+% *** CITATION PACKAGES ***
+%
+%\usepackage{cite}
+% cite.sty was written by Donald Arseneau
+% V1.6 and later of IEEEtran pre-defines the format of the cite.sty package
+% \cite{} output to follow that of the IEEE. Loading the cite package will
+% result in citation numbers being automatically sorted and properly
+% "compressed/ranged". e.g., [1], [9], [2], [7], [5], [6] without using
+% cite.sty will become [1], [2], [5]--[7], [9] using cite.sty. cite.sty's
+% \cite will automatically add leading space, if needed. Use cite.sty's
+% noadjust option (cite.sty V3.8 and later) if you want to turn this off
+% such as if a citation ever needs to be enclosed in parenthesis.
+% cite.sty is already installed on most LaTeX systems. Be sure and use
+% version 5.0 (2009-03-20) and later if using hyperref.sty.
+% The latest version can be obtained at:
+% http://www.ctan.org/pkg/cite
+% The documentation is contained in the cite.sty file itself.
+
+
+
+
+
+
+% *** GRAPHICS RELATED PACKAGES ***
+%
+\ifCLASSINFOpdf
+  % \usepackage[pdftex]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../pdf/}{../jpeg/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.pdf,.jpeg,.png}
+\else
+  % or other class option (dvipsone, dvipdf, if not using dvips). graphicx
+  % will default to the driver specified in the system graphics.cfg if no
+  % driver is specified.
+  % \usepackage[dvips]{graphicx}
+  % declare the path(s) where your graphic files are
+  % \graphicspath{{../eps/}}
+  % and their extensions so you won't have to specify these with
+  % every instance of \includegraphics
+  % \DeclareGraphicsExtensions{.eps}
+\fi
+% graphicx was written by David Carlisle and Sebastian Rahtz. It is
+% required if you want graphics, photos, etc. graphicx.sty is already
+% installed on most LaTeX systems. The latest version and documentation
+% can be obtained at: 
+% http://www.ctan.org/pkg/graphicx
+% Another good source of documentation is "Using Imported Graphics in
+% LaTeX2e" by Keith Reckdahl which can be found at:
+% http://www.ctan.org/pkg/epslatex
+%
+% latex, and pdflatex in dvi mode, support graphics in encapsulated
+% postscript (.eps) format. pdflatex in pdf mode supports graphics
+% in .pdf, .jpeg, .png and .mps (metapost) formats. Users should ensure
+% that all non-photo figures use a vector format (.eps, .pdf, .mps) and
+% not a bitmapped formats (.jpeg, .png). The IEEE frowns on bitmapped formats
+% which can result in "jaggedy"/blurry rendering of lines and letters as
+% well as large increases in file sizes.
+%
+% You can find documentation about the pdfTeX application at:
+% http://www.tug.org/applications/pdftex
+
+
+
+
+
+% *** MATH PACKAGES ***
+%
+%\usepackage{amsmath}
+% A popular package from the American Mathematical Society that provides
+% many useful and powerful commands for dealing with mathematics.
+%
+% Note that the amsmath package sets \interdisplaylinepenalty to 10000
+% thus preventing page breaks from occurring within multiline equations. Use:
+%\interdisplaylinepenalty=2500
+% after loading amsmath to restore such page breaks as IEEEtran.cls normally
+% does. amsmath.sty is already installed on most LaTeX systems. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/pkg/amsmath
+
+
+
+
+
+% *** SPECIALIZED LIST PACKAGES ***
+%
+%\usepackage{algorithmic}
+% algorithmic.sty was written by Peter Williams and Rogerio Brito.
+% This package provides an algorithmic environment fo describing algorithms.
+% You can use the algorithmic environment in-text or within a figure
+% environment to provide for a floating algorithm. Do NOT use the algorithm
+% floating environment provided by algorithm.sty (by the same authors) or
+% algorithm2e.sty (by Christophe Fiorio) as the IEEE does not use dedicated
+% algorithm float types and packages that provide these will not provide
+% correct IEEE style captions. The latest version and documentation of
+% algorithmic.sty can be obtained at:
+% http://www.ctan.org/pkg/algorithms
+% Also of interest may be the (relatively newer and more customizable)
+% algorithmicx.sty package by Szasz Janos:
+% http://www.ctan.org/pkg/algorithmicx
+
+
+
+
+% *** ALIGNMENT PACKAGES ***
+%
+%\usepackage{array}
+% Frank Mittelbach's and David Carlisle's array.sty patches and improves
+% the standard LaTeX2e array and tabular environments to provide better
+% appearance and additional user controls. As the default LaTeX2e table
+% generation code is lacking to the point of almost being broken with
+% respect to the quality of the end results, all users are strongly
+% advised to use an enhanced (at the very least that provided by array.sty)
+% set of table tools. array.sty is already installed on most systems. The
+% latest version and documentation can be obtained at:
+% http://www.ctan.org/pkg/array
+
+
+% IEEEtran contains the IEEEeqnarray family of commands that can be used to
+% generate multiline equations as well as matrices, tables, etc., of high
+% quality.
+
+
+
+
+% *** SUBFIGURE PACKAGES ***
+%\ifCLASSOPTIONcompsoc
+%  \usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
+%\else
+%  \usepackage[caption=false,font=footnotesize]{subfig}
+%\fi
+% subfig.sty, written by Steven Douglas Cochran, is the modern replacement
+% for subfigure.sty, the latter of which is no longer maintained and is
+% incompatible with some LaTeX packages including fixltx2e. However,
+% subfig.sty requires and automatically loads Axel Sommerfeldt's caption.sty
+% which will override IEEEtran.cls' handling of captions and this will result
+% in non-IEEE style figure/table captions. To prevent this problem, be sure
+% and invoke subfig.sty's "caption=false" package option (available since
+% subfig.sty version 1.3, 2005/06/28) as this is will preserve IEEEtran.cls
+% handling of captions.
+% Note that the Computer Society format requires a larger sans serif font
+% than the serif footnote size font used in traditional IEEE formatting
+% and thus the need to invoke different subfig.sty package options depending
+% on whether compsoc mode has been enabled.
+%
+% The latest version and documentation of subfig.sty can be obtained at:
+% http://www.ctan.org/pkg/subfig
+
+
+
+
+% *** FLOAT PACKAGES ***
+%
+%\usepackage{fixltx2e}
+% fixltx2e, the successor to the earlier fix2col.sty, was written by
+% Frank Mittelbach and David Carlisle. This package corrects a few problems
+% in the LaTeX2e kernel, the most notable of which is that in current
+% LaTeX2e releases, the ordering of single and double column floats is not
+% guaranteed to be preserved. Thus, an unpatched LaTeX2e can allow a
+% single column figure to be placed prior to an earlier double column
+% figure.
+% Be aware that LaTeX2e kernels dated 2015 and later have fixltx2e.sty's
+% corrections already built into the system in which case a warning will
+% be issued if an attempt is made to load fixltx2e.sty as it is no longer
+% needed.
+% The latest version and documentation can be found at:
+% http://www.ctan.org/pkg/fixltx2e
+
+
+%\usepackage{stfloats}
+% stfloats.sty was written by Sigitas Tolusis. This package gives LaTeX2e
+% the ability to do double column floats at the bottom of the page as well
+% as the top. (e.g., "\begin{figure*}[!b]" is not normally possible in
+% LaTeX2e). It also provides a command:
+%\fnbelowfloat
+% to enable the placement of footnotes below bottom floats (the standard
+% LaTeX2e kernel puts them above bottom floats). This is an invasive package
+% which rewrites many portions of the LaTeX2e float routines. It may not work
+% with other packages that modify the LaTeX2e float routines. The latest
+% version and documentation can be obtained at:
+% http://www.ctan.org/pkg/stfloats
+% Do not use the stfloats baselinefloat ability as the IEEE does not allow
+% \baselineskip to stretch. Authors submitting work to the IEEE should note
+% that the IEEE rarely uses double column equations and that authors should try
+% to avoid such use. Do not be tempted to use the cuted.sty or midfloat.sty
+% packages (also by Sigitas Tolusis) as the IEEE does not format its papers in
+% such ways.
+% Do not attempt to use stfloats with fixltx2e as they are incompatible.
+% Instead, use Morten Hogholm'a dblfloatfix which combines the features
+% of both fixltx2e and stfloats:
+%
+% \usepackage{dblfloatfix}
+% The latest version can be found at:
+% http://www.ctan.org/pkg/dblfloatfix
+
+
+
+
+%\ifCLASSOPTIONcaptionsoff
+%  \usepackage[nomarkers]{endfloat}
+% \let\MYoriglatexcaption\caption
+% \renewcommand{\caption}[2][\relax]{\MYoriglatexcaption[#2]{#2}}
+%\fi
+% endfloat.sty was written by James Darrell McCauley, Jeff Goldberg and 
+% Axel Sommerfeldt. This package may be useful when used in conjunction with 
+% IEEEtran.cls'  captionsoff option. Some IEEE journals/societies require that
+% submissions have lists of figures/tables at the end of the paper and that
+% figures/tables without any captions are placed on a page by themselves at
+% the end of the document. If needed, the draftcls IEEEtran class option or
+% \CLASSINPUTbaselinestretch interface can be used to increase the line
+% spacing as well. Be sure and use the nomarkers option of endfloat to
+% prevent endfloat from "marking" where the figures would have been placed
+% in the text. The two hack lines of code above are a slight modification of
+% that suggested by in the endfloat docs (section 8.4.1) to ensure that
+% the full captions always appear in the list of figures/tables - even if
+% the user used the short optional argument of \caption[]{}.
+% IEEE papers do not typically make use of \caption[]'s optional argument,
+% so this should not be an issue. A similar trick can be used to disable
+% captions of packages such as subfig.sty that lack options to turn off
+% the subcaptions:
+% For subfig.sty:
+% \let\MYorigsubfloat\subfloat
+% \renewcommand{\subfloat}[2][\relax]{\MYorigsubfloat[]{#2}}
+% However, the above trick will not work if both optional arguments of
+% the \subfloat command are used. Furthermore, there needs to be a
+% description of each subfigure *somewhere* and endfloat does not add
+% subfigure captions to its list of figures. Thus, the best approach is to
+% avoid the use of subfigure captions (many IEEE journals avoid them anyway)
+% and instead reference/explain all the subfigures within the main caption.
+% The latest version of endfloat.sty and its documentation can obtained at:
+% http://www.ctan.org/pkg/endfloat
+%
+% The IEEEtran \ifCLASSOPTIONcaptionsoff conditional can also be used
+% later in the document, say, to conditionally put the References on a 
+% page by themselves.
+
+
+
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+%
+%\usepackage{url}
+% url.sty was written by Donald Arseneau. It provides better support for
+% handling and breaking URLs. url.sty is already installed on most LaTeX
+% systems. The latest version and documentation can be obtained at:
+% http://www.ctan.org/pkg/url
+% Basically, \url{my_url_here}.
+
+
+
+
+% *** Do not adjust lengths that control margins, column widths, etc. ***
+% *** Do not use packages that alter fonts (such as pslatex).         ***
+% There should be no need to do such things with IEEEtran.cls V1.6 and later.
+% (Unless specifically asked to do so by the journal or conference you plan
+% to submit to, of course. )
+
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+\usepackage[margin=.75in]{geometry}
+\usepackage{courier}
+\usepackage{ifthen}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage[usenames, dvipsnames]{color}
+\usepackage{tabularx}
+\usepackage[strict]{chngpage}
+\usepackage{cite}
+
+\lstset {
+	language=C,
+	basicstyle=\ttfamily,
+	keywordstyle=\color{blue}\ttfamily,
+	stringstyle=\color{red}\ttfamily,
+	commentstyle=\color{OliveGreen}\ttfamily,
+	morecomment=[l][\color{magenta}]{\#}
+	showstringspaces=false,
+	showspaces=false,
+	frame=single,
+	captionpos=b
+}
+
+\newcommand{\commandline}[2][\empty]
+{
+\begin{quote}
+\texttt{#2}
+\ifthenelse{\equal{#1}{\empty}}{}{\begin{quote}#1\end{quote}}
+\end{quote}
+}
+
+\begin{document}
+\singlespace
+
+
+
+
+%
+% paper title
+% Titles are generally capitalized except for words such as a, an, and, as,
+% at, but, by, for, in, nor, of, on, or, the, to and up, which are usually
+% not capitalized unless they are the first or last word of the title.
+% Linebreaks \\ can be used within to get better formatting as desired.
+% Do not put math or special symbols in the title.
+\title{\vspace{2in}Project 1: Getting Acquainted}
+%
+%
+% author names and IEEE memberships
+% note positions of commas and nonbreaking spaces ( ~ ) LaTeX will not break
+% a structure at a ~ so this keeps an author's name from being broken across
+% two lines.
+% use \thanks{} to gain access to the first footnote area
+% a separate \thanks must be used for each paragraph as LaTeX2e's \thanks
+% was not built to handle multiple paragraphs
+%
+
+\author{Albert Morgan}
+
+% note the % following the last \IEEEmembership and also \thanks - 
+% these prevent an unwanted space from occurring between the last author name
+% and the end of the author line. i.e., if you had this:
+% 
+% \author{....lastname \thanks{...} \thanks{...} }
+%                     ^------------^------------^----Do not want these spaces!
+%
+% a space would be appended to the last name and could cause every name on that
+% line to be shifted left slightly. This is one of those "LaTeX things". For
+% instance, "\textbf{A} \textbf{B}" will typeset as "A B" not "AB". To get
+% "AB" then you have to do: "\textbf{A}\textbf{B}"
+% \thanks is no different in this regard, so shield the last } of each \thanks
+% that ends a line with a % and do not let a space in before the next \thanks.
+% Spaces after \IEEEmembership other than the last one are OK (and needed) as
+% you are supposed to have spaces between the names. For what it is worth,
+% this is a minor point as most people would not even notice if the said evil
+% space somehow managed to creep in.
+
+
+
+% The paper headers
+\markboth{Operating Systems II, Oregon State University}%
+{Assignment 1}
+% The only time the second header will appear is for the odd numbered pages
+% after the title page when using the twoside option.
+% 
+% *** Note that you probably will NOT want to include the author's ***
+% *** name in the headers of peer review papers.                   ***
+% You can use \ifCLASSOPTIONpeerreview for conditional compilation here if
+% you desire.
+
+
+
+
+% If you want to put a publisher's ID mark on the page you can do it like
+% this:
+%\IEEEpubid{0000--0000/00\$00.00~\copyright~2015 IEEE}
+% Remember, if you use this you must call \IEEEpubidadjcol in the second
+% column for its text to clear the IEEEpubid mark.
+
+
+
+% use for special paper notices
+%\IEEEspecialpapernotice{(Invited Paper)}
+
+
+
+
+% make the title area
+% Disable the IEEE standard title and make a custom title page
+% As a general rule, do not put math, special symbols or citations
+% in the abstract or keywords.
+% \vspace{2in}
+% \maketitle
+\pagestyle{empty}
+\vspace*{2in}
+\begin{center}
+\huge
+I/O\\
+\normalsize
+Operating Systems II\\
+Spring 2016\\
+Albert Morgan
+\end{center}
+\vspace{.5in}
+\begin{center}
+\textbf{Abstract}
+\end{center}
+\begin{adjustwidth}{2in}{2in}
+In his report, \textit{I/O}, OSU computer science major
+Albert Morgan compares how the Linux, BSD, and Windows operating
+systems handle I/O, with special attention paid to block I/O.
+Morgan's report uses research from four different technical
+textbooks and two offical online sources to create summaries of
+each operating system and compare their functionality side-by-side.
+Morgan uses these comparisons to make the point that Linux and BSD
+are very similiar, but the I/O functionality of Windows is
+extremely different, both in terms of internal data structures and
+prioritization algorithms. Morgan's report is written in an
+academic manner for an audience already familiar with the internal
+components of operating systems.
+\end{adjustwidth}
+\newpage
+\pagestyle{headings}
+% Note that keywords are not normally used for peerreview papers.
+%\begin{IEEEkeywords}
+%IEEE, IEEEtran, journal, \LaTeX, paper, template.
+%\end{IEEEkeywords}
+%
+% For peer review papers, you can put extra information on the cover
+% page as needed:
+% \ifCLASSOPTIONpeerreview
+% \begin{center} \bfseries EDICS Category: 3-BBND \end{center}
+% \fi
+%
+% For peerreview papers, this IEEEtran command inserts a page break and
+% creates the second title. It will be ignored for other modes.
+%\IEEEpeerreviewmaketitle
+%
+\section{Introduction}
+This report will comapre the way that Linux, BSD, and
+Windows handle I/O. I/O is the way that the operating system
+communicates with external devices such as hard drives and keyboards,
+and efficiently handling of I/O can be a significant performance
+consideration.
+
+There are two types of I/O devices: block devices and character devices.
+Character devices are a simple stream of data. Reading from a character
+device is a relatively straightforward process: simply get the next character.
+Block devices, on the other
+hand, are much more complicated. Different threads can be attempting to read
+and write from and to different sections of the block device at the same time.
+Additionally, block devices such as disk drives are very slow due to the
+mechanical components, making efficient ordering of I/O requests an important
+consideration. Because block I/O is such a more important and
+complicated topic, that will be the focus of this report.
+%
+\subsection{Linux}
+Block I/O in Linux is handled by three structures, \textit{requests},
+\textit{bios}, and \textit{bio vectors}. When a system call is made that
+needs to read or write data on a block device,
+\texttt{request} is created. A request
+represents a series of contiguous sectors
+on the device. The memory that the sectors are going to be loaded in to,
+however, can be anywhere. If two requests are adjacent on the block device,
+they can be merged into a single, more efficient request. However, read
+and write requests can never be merged together.
+
+Each \texttt{request} contains a linked list of \texttt{bio} (block I/O) structs, which
+are the workhorses of the \texttt{request}. A \texttt{bio} struct is a single
+operation on the block device. Listing~\ref{biostruct} shows the
+\texttt{bio} struct.
+
+There is one more layer that must be considered before we are finished. Each
+\texttt{bio} struct contains a number of {bi\_vec} structs, which map
+the blocks read off the device direcly to memory pages. This enabled
+\textit{scatter/gather}, in which contiguous segments on a disk do not need
+to be mapped to contiguous blocks of memory~\cite{ldd3}.
+
+\lstinputlisting[language=c, firstline=42, lastline=105,
+caption={The Linux kernel's \texttt{bio} struct,
+found in \texttt{block\_types.h}},
+label={biostruct}]{blk_types.h}
+
+Once the request is made, the kernel must 
+decide the order in which requests are processed. This is important because
+most block devices, such as disk drives, do not have an instantaneous
+seek time; it takes a small but noticible amount of time for disk head
+to traverse the span of the disk. By ordering the requests in an intelligent
+manner, overall efficiency can be improved. The algorithms that determine
+the order that requests are serviced are known as \textit{schedulers},
+which are also sometimes called \textit{elevators}.
+The Linux kernel comes with three schedulers.
+
+The \textit{noop} scheduler is the simplest. Designed for devices with
+no seek time such as solid-state drives, the noop scheduler is simply
+a FIFO queue, with each request being serviced in the order it was
+received.
+
+Depending on the algorithm used to schedule requests, some requests might
+take a very long time to be serviced, or even not serviced at all. This
+condition is known as \textit{starvation}. The \textit{deadline} scheduler
+was written to fix starvation issues in previous scheduler algorithms. The
+deadline scheduler keeps three queues: a read, write, and sorted queue.
+When a request comes in, it is given an expiration time,
+by default 500ms for read requests and 5 seconds for write requests. Read
+requests get a much smaller expiration time because applications typically
+block when they are reading, and fulfilling these requests faster will
+result in a more responsive system.
+Requests are inserted two queues: both the sorted queue and the read or write
+queue, whichever is appropriate. Under normal operation, requests are simply
+serviced from the sorted queue. However, if the request at the front of the
+read or write queue expires, the scheduler will start to service that
+queue instead. By keeping track of the expiration times, the deadline
+scheduler can prevent starvation and make sure all requests are serviced in
+a reasonable amount of time. The 
+\textit{anticipatory} scheduler tried to improve
+on this algorithm by having the disk head linger after making a read in
+case another read was issued shortly thereafter. However, the anticipatory
+scheduler was removed from the kernel in version  favor of the
+CFQ scheduler in kernel version 2.6.33.
+
+The \textit{CFQ}, or Complete Fair Queueing I/O scheduler is similiar to the
+Completely Fair Scheduler that the Linux kernel uses for process management
+in that is attempts to divide resources as 
+evenly as possible between processes. Its operation is very simple: a
+separate queue is maintained for each process on the system, and when
+a new request comes in, it is added to the appropriate queue. The queues
+are then serviced round robin. The CFQ scheduler works well for
+multimedia applications that need to access the hard drive at a relatively
+constant rate, and is currently the default scheduler for the Linux
+operating system\cite{linux-kernel-dev}.
+
+\subsection{BSD}
+Block I/O in BSD works very similarlly to Linux. Instead of using
+a \texttt{bio} struct to handle operations, BSD uses a struct called
+\texttt{uio}\cite{des-imp-bsd-os}. Listing~\ref{uiostruct} shows
+the \texttt{uio} struct. 
+Important note: BSD also has a struct called \texttt{bio},
+but it is used as part of the GEOM layer which enables arbitrary I/O
+transformations and is used for things like RAID or encrypted disks.
+This struct is not the same as the Linux kernel's \texttt{bio}
+struct~\cite{geom}.
+Similiar to Linux, the \texttt{uio} struct uses a list of vectors
+to map memory pages to sectors on the device.
+
+\lstinputlisting[language=c, firstline=32, lastline=40,
+caption={The BSD kernel's \texttt{uio} struct, found in \texttt{uio.h}},
+label={uiostruct}]{uio.h}
+
+One key difference between BSD and Linux block I/O is how requests are
+sorted. Linux provides three different schedulers, two of which are
+relatively complicated. In contrast, the BSD kernel provides one generic
+scheduler: \texttt{disksort()}. The \texttt{disksort()} scheduler implements
+the \textit{C-LOOK} algorithm. The scheduler maintains two queues, an active
+queue and a next-pass queue. Requests are serviced in sector order.
+Requests that come after the current position
+of the disk head are sorted into the active list, and other requests
+are sorted into the next-pass queue. When the active queue is empty,
+the next-pass queue becomes the active queue, and a new next-pass queue
+is created\cite{des-imp-bsd-os}.
+
+\subsection{Windows}
+Windows I/O is as different from Linux as BSD is similar.
+One notable philosophical distinction between Windows and unix-based
+systems is that in Windows, an I/O operation allows communication with
+a device, and files are treated as special kinds of devices.
+This is the opposite of the unix philosophy, which prefers to think
+of everything (even devices) as files\cite{win-int-two}.
+
+The core of the Windows I/O system is the I/O Request Packet, or
+\texttt{IRP}. The \texttt{IRP} struct is partially opaque, and
+Listing ~\ref{irpstruct} shows the members of the
+\texttt{IRP} struct that drivers can use~\cite{msdn}.
+
+\lstinputlisting[language=c, caption={The Windows \texttt{IRP} struct\cite{msdn}}, label={irpstruct}]{irp.h}
+
+Like Linux and BSD, Windows supports scatter/gather I/O. The
+\texttt{MdlAddress} member of the \texttt{IRP} struct is similiar
+to the vectors that Linux's \texttt{bio} struct and BSD's
+\texttt{uio} struct uses. An MDL is a \textit{memory description list},
+which represents the memory buffers that the I/O operation should use.
+A scatter/gather operation is started and stopped with the functions
+\texttt{GetScatterGatherList()} and \texttt{PutScatterGatherList()}, which
+takes the \texttt{IRP}'s MDL as an argument.
+
+Windows block I/O scheduling is extremely different from either 
+Linux or BSD. Much like its process scheduler, Windows gives
+all of the resources to the highest priority process, and uses a system
+of boosts to try to keep operations from starving.
+Two types of prioritization: individual priority and bandwidth
+reservations, which will be explained below.
+
+Individual priority operations can be divided two different
+\textit{strategies}: \textit{hierarchy} or \textit{idle}.
+The hierarchy divides I/O operations into five
+categories: critial, high, normal, low, and very low. In the current
+version of Windows, only critical, normal, and very low are used, with high
+and low included for possible use in future versions. The rules
+are simple: each priority class of I/O can only be processed if there
+is nothing of higher priority to process, e.g. a normal operation will
+not be processed if there are any critical operations in flight. Operations
+using the idle strategy will be processed after all hierarchical operations.
+
+Windows uses a few different methods to prevent starvation of operations.
+The idle queue is guaranteed to process an operation every half a second or
+so. To prevent \textit{priority inversion}, a situation that arises when
+a high I/O priority thread is waiting on a low I/O priority thread,
+the low priority thread will be given a temporary boost to get its
+operation done faster. Boosts will also be given when a higher-priority
+process tries to access a lower-priority file, or when a low-priority
+process accesses the paging file. This combination of hierarchies and
+boosts covers the individual priority system.
+
+The next way that Windows handles I/O prioritization is
+\textit{bandwidth reservation}. This simply means that the kenrel
+uses time multiplexing to give certain applications highest priority
+during dedicated timeslices. For example, a media application might
+use bandwidth reservation to ensure that its I/O operations are being
+services in a timely manner and it can
+keep its buffer full~\cite{win-int-two}.
+
+\section{Conclusion}
+Linux and BSD are almost identical in the way they handle I/O. The
+specific names and data structures differ slightly, but the basic
+idea of requests, I/O operations, and vectors remains the same. One
+difference is that BSD uses the C-LOOK scheduler, while Linux uses
+the much more complicated CFQ scheduler by default.
+
+Windows, on the other hand, is completely different. Although it
+supports the same types of things that Linux and BSD do, like
+scatter/gather I/O, the internal data structures and philosophies
+behind the algorithms are completely different.
+
+The Windows kernel also applies the unique idea of boosting to
+its I/O scheduler. Similiar to the way it schedules processes,
+Windows does not try to maximize fairness or minimize overall
+seek times the way that Linux and BSD do. The Windows I/O scheduler
+services all requests from high priority to low priority, and applies
+a relatively complicated system of boosts to ensure that no
+problems arise. This boosting system is completely unlike the I/O
+systems of Linux or BSD.
+%
+% An example of a floating figure using the graphicx package.
+% Note that \label must occur AFTER (or within) \caption.
+% For figures, \caption should occur after the \includegraphics.
+% Note that IEEEtran v1.7 and later has special internal code that
+% is designed to preserve the operation of \label within \caption
+% even when the captionsoff option is in effect. However, because
+% of issues like this, it may be the safest practice to put all your
+% \label just after \caption rather than within \caption{}.
+%
+% Reminder: the "draftcls" or "draftclsnofoot", not "draft", class
+% option should be used if it is desired that the figures are to be
+% displayed while in draft mode.
+%
+%\begin{figure}[!t]
+%\centering
+%\includegraphics[width=2.5in]{myfigure}
+% where an .eps filename suffix will be assumed under latex, 
+% and a .pdf suffix will be assumed for pdflatex; or what has been declared
+% via \DeclareGraphicsExtensions.
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure}
+
+% Note that the IEEE typically puts floats only at the top, even when this
+% results in a large percentage of a column being occupied by floats.
+
+
+% An example of a double column floating figure using two subfigures.
+% (The subfig.sty package must be loaded for this to work.)
+% The subfigure \label commands are set within each subfloat command,
+% and the \label for the overall figure must come after \caption.
+% \hfil is used as a separator to get equal spacing.
+% Watch out that the combined width of all the subfigures on a 
+% line do not exceed the text width or a line break will occur.
+%
+%\begin{figure*}[!t]
+%\centering
+%\subfloat[Case I]{\includegraphics[width=2.5in]{box}%
+%\label{fig_first_case}}
+%\hfil
+%\subfloat[Case II]{\includegraphics[width=2.5in]{box}%
+%\label{fig_second_case}}
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure*}
+%
+% Note that often IEEE papers with subfigures do not employ subfigure
+% captions (using the optional argument to \subfloat[]), but instead will
+% reference/describe all of them (a), (b), etc., within the main caption.
+% Be aware that for subfig.sty to generate the (a), (b), etc., subfigure
+% labels, the optional argument to \subfloat must be present. If a
+% subcaption is not desired, just leave its contents blank,
+% e.g., \subfloat[].
+
+
+% An example of a floating table. Note that, for IEEE style tables, the
+% \caption command should come BEFORE the table and, given that table
+% captions serve much like titles, are usually capitalized except for words
+% such as a, an, and, as, at, but, by, for, in, nor, of, on, or, the, to
+% and up, which are usually not capitalized unless they are the first or
+% last word of the caption. Table text will default to \footnotesize as
+% the IEEE normally uses this smaller font for tables.
+% The \label must come after \caption as always.
+%
+%\begin{table}[!t]
+%% increase table row spacing, adjust to taste
+%\renewcommand{\arraystretch}{1.3}
+% if using array.sty, it might be a good idea to tweak the value of
+% \extrarowheight as needed to properly center the text within the cells
+%\caption{An Example of a Table}
+%\label{table_example}
+%\centering
+%% Some packages, such as MDW tools, offer better commands for making tables
+%% than the plain LaTeX2e tabular which is used here.
+%\begin{tabular}{|c||c|}
+%\hline
+%One & Two\\
+%\hline
+%Three & Four\\
+%\hline
+%\end{tabular}
+%\end{table}
+
+
+% Note that the IEEE does not put floats in the very first column
+% - or typically anywhere on the first page for that matter. Also,
+% in-text middle ("here") positioning is typically not used, but it
+% is allowed and encouraged for Computer Society conferences (but
+% not Computer Society journals). Most IEEE journals/conferences use
+% top floats exclusively. 
+% Note that, LaTeX2e, unlike IEEE journals/conferences, places
+% footnotes above bottom floats. This can be corrected via the
+% \fnbelowfloat command of the stfloats package.
+
+
+
+% if have a single appendix:
+%\appendix[Proof of the Zonklar Equations]
+% or
+%\appendix  % for no appendix heading
+% do not use \section anymore after \appendix, only \section*
+% is possibly needed
+
+% use appendices with more than one appendix
+% then use \section to start each appendix
+% you must declare a \section before using any
+% \subsection or using \label (\appendices by itself
+% starts a section numbered zero.)
+
+% Can use something like this to put references on a page
+% by themselves when using endfloat and the captionsoff option.
+
+
+
+% trigger a \newpage just before the given reference
+% number - used to balance the columns on the last page
+% adjust value as needed - may need to be readjusted if
+% the document is modified later
+%\IEEEtriggeratref{8}
+% The "triggered" command can be changed if desired:
+%\IEEEtriggercmd{\enlargethispage{-5in}}
+
+% references section
+
+% can use a bibliography generated by BibTeX as a .bbl file
+% BibTeX documentation can be easily obtained at:
+% http://mirror.ctan.org/biblio/bibtex/contrib/doc/
+% The IEEEtran BibTeX style support page is at:
+% http://www.michaelshell.org/tex/ieeetran/bibtex/
+%\bibliographystyle{IEEEtran}
+% argument is your BibTeX string definitions and bibliography database(s)
+%\bibliography{IEEEabrv,../bib/paper}
+%
+% <OR> manually copy in the resultant .bbl file
+% set second argument of \begin to the number of references
+% (used to reserve space for the reference number labels box)
+
+\bibliography{mybib}
+\bibliographystyle{IEEEtran}
+
+% biography section
+% 
+% If you have an EPS/PDF photo (graphicx package needed) extra braces are
+% needed around the contents of the optional argument to biography to prevent
+% the LaTeX parser from getting confused when it sees the complicated
+% \includegraphics command within an optional argument. (You could create
+% your own custom macro containing the \includegraphics command to make things
+% simpler here.)
+%\begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{mshell}}]{Michael Shell}
+% or if you just want to reserve a space for a photo:
+
+
+% You can push biographies down or up by placing
+% a \vfill before or after them. The appropriate
+% use of \vfill depends on what kind of text is
+% on the last page and whether or not the columns
+% are being equalized.
+
+%\vfill
+
+% Can be used to pull up biographies so that the bottom of the last one
+% is flush with the other column.
+%\enlargethispage{-5in}
+
+
+
+% that's all folks
+\end{document}
+
+

@@ -11,7 +11,7 @@
 
 #define MAX_DATA	1000
 
-/* Turn this on to have the thread sleep after doing their operation.
+/* Turn this on to have the thread sleep after doing its operation.
  * Useful for checking that the behavior is correct.
  */
 #define ARTIFICIAL_SLEEP	1
@@ -142,7 +142,6 @@ void *inserter(void *arg)
 			} else {
 
 				place = rand() % sd->num_items;
-				printf("starting loop\n");
 				for(i = sd->num_items; i > place; i--) {
 					sd->data[i] = sd->data[i - 1];
 				}

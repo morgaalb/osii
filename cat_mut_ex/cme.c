@@ -5,16 +5,19 @@
 #include <time.h>
 #include <unistd.h>
 
-#define NUM_SEARCHERS	10
-#define NUM_INSERTERS	3
-#define NUM_DELETERS	3
-
-#define MAX_DATA	1000
-
-/* Turn this on to have the thread sleep after doing its operation.
+/* Set this to 1 to have the thread sleep after doing its operation.
  * Useful for checking that the behavior is correct.
  */
 #define ARTIFICIAL_SLEEP	1
+
+/* Number of different types of threads */
+#define NUM_SEARCHERS		10
+#define NUM_INSERTERS		3
+#define NUM_DELETERS		3
+
+/* Size of data the threads operate on */
+#define MAX_DATA		1000
+
 
 typedef unsigned int ticket_t;
 
@@ -81,7 +84,6 @@ void *searcher(void *arg)
 		pthread_cond_broadcast(&sd->cond_zero); // possibly wake up other searchers
 		pthread_mutex_unlock(&sd->lock_data);
 
-		// SEARCH HERE
 		printf("Searcher %d is searching.\n", my_num);
 		value = rand() % 1000;
 		for (i = 0; i < sd->num_items; i++) {
@@ -133,8 +135,6 @@ void *inserter(void *arg)
 		pthread_mutex_unlock(&sd->lock_data);
 
 		if (sd->num_items < MAX_DATA) {
-		
-			// INSERT HERE	
 			printf("Inserter %d is inserting\n", my_num);
 			value = rand() % 1000;
 			if (sd->num_items == 0) {
@@ -197,7 +197,6 @@ void *deleter(void *arg)
 		pthread_mutex_unlock(&sd->lock_data);
 
 		if (sd->num_items > 0) {		
-			// DELETE HERE
 			printf("Deleter %d is deleting.\n", my_num);
 			place = rand() % sd->num_items;
 			for (i = place; i < sd->num_items; i++) {

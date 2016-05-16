@@ -357,9 +357,8 @@
 \usepackage[usenames, dvipsnames]{color}
 \usepackage{tabularx}
 \usepackage[strict]{chngpage}
+\usepackage{cite}
 \usepackage{graphicx}
-\usepackage{wrapfig}
-\usepackage{csquotes}
 
 \lstset {
 	language=C,
@@ -371,9 +370,7 @@
 	showstringspaces=false,
 	showspaces=false,
 	frame=single,
-	captionpos=b,
-	numbers=left,
-	xleftmargin=3em
+	captionpos=b
 }
 
 \newcommand{\commandline}[2][\empty]
@@ -397,7 +394,7 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{\vspace{2in}Project 2: I/O Elevators}
+\title{\vspace{2in}Project 1: Getting Acquainted}
 %
 %
 % author names and IEEE memberships
@@ -433,7 +430,7 @@
 
 % The paper headers
 \markboth{Operating Systems II, Oregon State University}%
-{Project 2}
+{Assignment 1}
 % The only time the second header will appear is for the odd numbered pages
 % after the title page when using the twoside option.
 % 
@@ -469,7 +466,7 @@
 \vspace*{2in}
 \begin{center}
 \huge
-Project 3: Encrypted RAMdisk\\
+Interrupts\\
 \normalsize
 Operating Systems II\\
 Spring 2016\\
@@ -480,16 +477,20 @@ Albert Morgan
 \textbf{Abstract}
 \end{center}
 \begin{adjustwidth}{2in}{2in}
-In his report on Project 3: Encrypted RAMdisk, OSU computer
-science major Albert Morgan explains the highlights of his
-implementation of an encrypted RAMdisk on the Linux
-operating sytem. Using descriptions of the algorithms used
-and commands used to test the module, Morgan explains his solution
-and proves the correctness of the module. Morgan comes to the
-conclusion that combining code from different sources can be
-a highly effective way of creating a new product. Morgan's
-report is written in an academic manner for readers
-interested in the Linux kernel.
+In his report, \textit{Interrupts}, OSU computer science major
+Albert Morgan compares how the Linux, BSD, and Windows operating
+systems handle interrupts, including the system timer, which
+relies on interrupts to work.
+Morgan's report uses research from three different technical
+textbooks to create summaries of
+each operating system and compare their functionality side-by-side.
+Morgan uses these comparisons to make the point that Linux has the
+most features, BSD is relatively straightforward, and Windows
+is somewhere between Linux and BSD in complexity,
+but works entirely different.
+Morgan's report is written in an
+academic manner for an audience already familiar with the internal
+components of operating systems.
 \end{adjustwidth}
 \newpage
 \pagestyle{headings}
@@ -497,6 +498,7 @@ interested in the Linux kernel.
 %\begin{IEEEkeywords}
 %IEEE, IEEEtran, journal, \LaTeX, paper, template.
 %\end{IEEEkeywords}
+%
 % For peer review papers, you can put extra information on the cover
 % page as needed:
 % \ifCLASSOPTIONpeerreview
@@ -508,134 +510,188 @@ interested in the Linux kernel.
 %\IEEEpeerreviewmaketitle
 %
 \section{Introduction}
-This report will document the process of writing an encrypted ramdisk
-driver for the Linux operating system.
-An overview of the algorithm will
-be presented, and details about the testing done will be given.
+This report will compare the way that Linux, BSD, and Windows handle
+\textit{interrupts}.
+Interrupts are special signals that are sent to the processor either from
+devices or from the processor itself.
+Interrupts inform the processor that some action needs to be taken.
+Interrupts are important for modern computing for two
+reasons.
+First, without interrupts, the processor would have to check for these signals
+using a technique called \textit{polling}. With polling, the processor will
+check if a new event has occurred periodically at some interval,
+often hundreds of times per second. 
+This can cause a significant amount of overhead,
+because the processor needs to check for the signal whether or not it
+is there or not.
+Second, interrupts allow the existence of the \textit{system timer}.
+The system timer wakes up the operating system kernel every so often,
+usually 100 or 1000 times per second,
+at which point the kernel can perform the tasks that it needs to do,
+such as scheduling processes for multitasking.
+This allows for \textit{kernel preemption}, or forced context switches.
+Without interrupts and kernel preemption, the kenel would have to wait
+for a user process to voluntarily give up control before it takes back
+over.
 %
-\section{Design}
-My implementation of the encryption ramdisk uses the
-Advanced Encryption Standard, or AES, to encrypt each I/O transfer as
-it is written to or read from the disk.
-The core of the design is based on a branch of the \texttt{sbull}
-driver from the book \textit{Linux Device Drivers, Third Edition}
-which has been ported to Linux kernel version 3.
-Besides initializing the the crypto API, the bulk of the logic that
-was added to \texttt{sbull} was the encryption and decryption of 
-blocks as they are transfered to and from the drive,
-shown in listing~\ref{sbulltranfer}.
-
-\lstinputlisting[language=c, firstline=118, lastline=128,
-caption={A partial view of \texttt{sbull\_transfer()}, which
-handles tranfering data to and from the device},
-label={sbulltranfer}]
-{sbull.c}
-
-The variable \texttt{keylen} is the length of the key.
-If the key lengthis not zero, 
-then we use encryption mode. \texttt{nbytes} is the number
-of bytes to be written, and \texttt{ccb} is the size of the cryptographic
-cipher blocksize.
-So, for every cryptographic block in the input data,
-the block in encrypted, and written directly to the ramdisk data buffer
-, \texttt{dev->data}. The read function works almost identically, but
-uses the \texttt{crypto\_cipher\_decrypt\_one()} function instead of
-\texttt{crypto\_cipher\_encrypt\_one()} function.
-
-\section{Testing}
-% The very first letter is a 2 line initial drop letter followed
-% by the rest of the first word in caps.
-% 
-% form to use if the first word consists of a single letter:
-% \IEEEPARstart{A}{demo} file is ....
-% 
-% form to use if you need the single drop letter followed by
-% normal text (unknown if ever used by the IEEE):
-% \IEEEPARstart{A}{}demo file is ....
-% 
-% Some journals put the first two words in caps:
-% \IEEEPARstart{T}{his demo} file is ....
-% 
-% Here we have the typical use of a "T" for an initial drop letter
-% and "HIS" in caps to complete the first word.
-
-Testing was performed by dumping the contents of the ramdisk
-directly from memory, at which point it could be loaded back into
-the ramdisk, or a new ramdisk with a different key. Loading the old
-data into a new ramdisk with the same key should allow the ramdisk
-to be mounted normally, whereas using a different key shouldn't work:
-it will just look like random bytes to the operating system.
-
-The address of the ramdisk in \texttt{/dev/mem} was found by
-printing out the address when the module was loaded.
-In order to do this, the data had to be allocated with \texttt{kmalloc()}
-instead of \texttt{vmalloc()} to ensure that it was contiguous,
-and the kernel macro \texttt{virt\_to\_phys()} was used to convert
-the virtual address into a physical one. Listing~\ref{sbullalloc} shows
-how the drive is allocated and the physical address is found.
-
-\lstinputlisting[language=c, firstline=374, lastline=376,
-caption={The ramdisk allocation and debugging information},
-label={sbullalloc}]
-{sbull.c}
-
-Now that we have the physical address, it is a relatively simple
-process to test. Once the modules has been copied into the VM using
-scp, it is loaded:
-
-\commandline{insmod sbull.ko key=foo}
-\commandline{Allocating 524288 bytes at 352845824}
-
-Then, after creating a filesystem, the contents of the ramdisk can be
-dumped into a file:
-
-\commandline{dd if=/dev/mem of=ramdump ibs=1 obs=1 count=524288 skip=352845824}
-
-Now we have a copy of the raw (encrypted) contents of the ramdisk. It is a
-simple matter to load the sbull module with different keys, and use \texttt{dd}
-to write the contents of \texttt{ramdump} directly back into the ramdisk
-memory. If the module was loaded with a different key, mounting should fail
-after this is done. If the module was loaded with the same key, then the
-encrypted ramdisk should mount normally.
+\subsection{Linux}
 %
-\section{Commit Log}
-\begin{tabularx}{\linewidth}{| l | X |}
-\hline
-\textbf{Date} & \textbf{Commit message}\\\hline
-2016-5-8 & Initial commit. Started with sbull for Linux 3.\\\hline
-%
-2016-5-8 & Finished crypto routines\\\hline
-%
-2016-5-14 & Fixed but with freeing data upon exit\\\hline
-\end{tabularx}
-%
-\section{Work Log}
-\begin{tabularx}{\linewidth}{| l | X | l |}
-\hline
-\textbf{Date} & \textbf{Notes} & \textbf{Work (hours)}\\\hline
-2016-5-14 & Testing and writeup & 3\\\hline
-%
-2016-5-8 & Initial implementation & 6\\\hline
-\end{tabularx}
-%
+Interrupts need to run fast. Because an interupt could occur at any time,
+it is important to process it as quickly as possible so that the
+computer can get back to doing what it was doing before. An interrupt that
+runs too long could disrupt other timing critical applications running
+on the system.
+However, sometimes there is a significant amount of processing that needs
+to be performing by the interrupt.
+For example, if the processor receives an interrupt informing it that
+a network packet has just arrived,
+it may be important to clear the incoming buffer and send an
+acknowledgement as soon as possible,
+but processing the actual bytes in the packet might not be as time critical.
+In order to help with this, 
+interrupt handlers in Linux are divided into two parts:
+the \textit{top half} and the \textit{bottom half}.
+
+The top half of the interrupt handler is the ``classic'' part of the
+handler: it is the code that gets called when an interrupt happens,
+interrupting the process that is currently running.
+This is the part of the interrupt that needs to run quickly.
+Parts of the interrupt that do not need to run quickly are deferred to
+the bottom half, which runs later (i.e. not now).
+The bottom half is where any deferred work that does not
+absolutely have to get done right away is performed.
+As of kernel version 2.3, Linux has three types of bottom halves:
+\textit{softirqs}, \textit{tasklets}, and \textit{work queues}.
+
+Softirqs are statically allocated at compile time. They do not
+provide any serialization, which means two copies of the same
+softirq can be running on two different processors concurrently.
+Although interrupts are not run in any particular order,
+softirqs are.
+Listing~\ref{softirqc} shows how softirqs are executed in
+priority order.
+Tasklets are built on top of softirqs. They can be allocated
+dynamically at runtime and are serialized: two copies of the same
+tasklet cannot be running at the same time on \textit{any} processor.
+Both softirqs and tasklets run in an interrupt context,
+which means that neither are allowed to sleep.
+Work queues, the final type of bottom half,
+run in a process context, which means that they are allowed to sleep.
+
+\lstinputlisting[language=c, caption={A simplified variant of the function that calls softirqs in priority order \cite{linux-kernel-dev}}, label={softirqc}]{softirq.c}
+
+By default, 
+the Linux system timer fires an interrupt every 10ms (100 times a second).
+However, it is possible to change this value at compile time.
+The Linux kernel also supports \textit{tickless operation}, which, instead
+of the system timer interrupt firing after a predetermined period of time,
+the kernel will figure out how long it needs to wait and schedule
+the next system timer to fire then.
+
+\textit{Exceptions} are caused when a process tries to do something illegal,
+such as divide by zero. They are very similiar to interrupts,
+and are handled in a nearly identical manner \cite{linux-kernel-dev}.
+
+
+\subsection{BSD}
+
+The BSD interrupt systems works similarly to Linux, although the names
+are slightly different and there is not the same variety of bottom halves
+available.
+
+BSD interrupts are divided into two pieces, much like the Linux kernel.
+The top half, which BSD calls a \textit{hardware interrupt} runs when
+the interrupt is generated.
+Work that can be deferred until later is run as a \textit{software interrupt},
+which is BSD's version of the Linux's kernels's bottom half, and run
+in a process context, similiar to work queues.
+
+Unlike Linux, BSD uses a dynamic system timer. Before the kernel switches
+context to another process, it estimates how long it can wait before
+it needs to wake up again, and sets time of the next timer tick
+appropriately. BSD has a system timer rate of 1000 ticks per second
+(10 times the default value for Linux), but due to this dynamic
+scheduling, the BSD kernel rarely wakes up at every possible timer
+tick.
+\cite{des-imp-bsd-os}.
+
+\subsection{Windows}
+
+In Windows, interrupts and exceptions are grouped into a single category
+called \textit{traps}. Similiarly to Linux, interrupts are traps that
+run asynchronously (i.e. they can occur at any time), whereas exceptions
+occur synchronously (they are only caused by actions of the processor).
+
+In Linux, interrupts are not serviced in any particular order
+(although some bottom halves are).
+However, in Windows, interrupts have an inherent priority.
+Each interrupt source has a priority, and interrupts are
+serviced according to the priority of that source.
+These priorities are called \textit{Interrupt Request Levels},
+or IRQLs. When an interrupt is run, Windows will raise
+the IRQL of the processor to prevent lower priority
+interrupts from preemting a higher priority interrupt. On Linux,
+it is the interrupt handler's duty to mask out the interrupts that
+it doesn't want to be preempted by. Figure~\ref{fig:intpriority}
+shows the 32 interrupt priorities that Windows uses.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm]{intpriority.eps}
+\caption{Interrupt priorities on the Windows operating system
+\cite{win-int-one}.
+}
+\label{fig:intpriority}
+\end{figure}
+
+Similiar to the bottom halves in Linux,
+Windows provides a framework for deferring non-critical code until later.
+The \textit{Dispatch or Deferred Procedure Call} (DPCs) are software
+interrupts (i.e. interrupts that are synchronously caused by the processor)
+that are used to defer work until later.
+DPCs are most like Linux's tasklets,
+because they cannot call functions which might block.
+APCs, or \textit{Asynchronous Procedure Calls} allow Windows to run
+code in the context of a specific user thread.
+The fact that APCs run in a user context makes them similiar to
+the Linux kernel's work queue, but there is one key difference:
+whereas work queues run a bottom half in a user context,
+an APC has the option to run in the context of a specific process.
+This feature allows interrupt handlers to more easily interact
+with user processes.
+
+The system timer on Windows uses one processor to keep track of
+the time: processor 0. Processor 0 receives a system clock
+interrupt at regular interrupts, much like Linux. Unlike Linux,
+this value is configurable at runtime, and if an application needs
+a higher resolution timer, it can request that these interrupts happen
+more often.
+The other processors on the system use a form of tickless operation,
+and when they sleep, will dynamically schedule the next
+timer interrupt. This allows sleeping processors to stay in a sleeping
+state longer, and conserve power. Windows calls this system
+\textit{intelligent timer tick distribuion} \cite{win-int-one}.
+
 \section{Conclusion}
-The purpose of this assignment was to familiarize students with
-the Linux crypto APIs, and learn how to deal with APIs that might
-have incomplete or inaccurate documentation.
+The philosophies behind Linux and BSD interrupt handling are similiar,
+although the naming conventions differ. Also, BSD does not have the
+same variety of bottom halves that Linux does.
 
-In addition to learning how to use the Linux crypto APIs, I learned
-how to pull resources from multiple sources, for example the
-\texttt{sbull} module from \textit{LDD3} and online information
-about the Linux crypto libraries and combine them to create something
-new and useful.
+Windows uses the same principles of top and bottom halves to
+defer work, but the specific bottom halves
+(which Windows, like BSD, refers to as software interrupts)
+operate differently. The key fucntional difference is that Asynchronous
+Procedure Calls in Windows allow an interrupt handler to actually
+run in the context of a specific running process, enabling
+a more direct link between processes and interrupts.
 
+%
 % An example of a floating figure using the graphicx package.
 % Note that \label must occur AFTER (or within) \caption.
 % For figures, \caption should occur after the \includegraphics.
 % Note that IEEEtran v1.7 and later has special internal code that
 % is designed to preserve the operation of \label within \caption
 % even when the captionsoff option is in effect. However, because
-
 % of issues like this, it may be the safest practice to put all your
 % \label just after \caption rather than within \caption{}.
 %
@@ -766,6 +822,9 @@ new and useful.
 % <OR> manually copy in the resultant .bbl file
 % set second argument of \begin to the number of references
 % (used to reserve space for the reference number labels box)
+
+\bibliography{mybib}
+\bibliographystyle{IEEEtran}
 
 % biography section
 % 
